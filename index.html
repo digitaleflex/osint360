@@ -1,0 +1,723 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07070a">
+  <meta name="color-scheme" content="dark">
+  <title>OSINT 360° — Conférence</title>
+  <meta name="description" content="OSINT 360° : conférence en direct sur TikTok LIVE le samedi 14 novembre 2026 à 20 h (UTC+1). Enquête, traces, identité numérique, protection : découvrez ce que l'on peut savoir sur vous.">
+  <!-- Partage réseaux sociaux : si votre domaine Vercel est différent, remplacez-le dans og:image (URL absolue obligatoire). -->
+  <meta property="og:title" content="OSINT 360° — On sait plus de choses sur vous que vous ne l'imaginez">
+  <meta property="og:description" content="Conférence en direct sur TikTok LIVE · Samedi 14 novembre 2026 · 20 h (UTC+1). Rejoignez le groupe WhatsApp.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://osint360.vercel.app/assets/osint360-banniere.webp">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="assets/favicon.webp" type="image/webp">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+  <link rel="preload" as="image" href="assets/logo.webp">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Montserrat:ital,wght@0,700;0,800;0,900;1,800;1,900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#07070a;--bg2:#0d0d12;--panel:#111117;--panel2:#16161d;
+      --text:#f6f6f8;--muted:#a3a3b0;--dim:#6f6f7c;
+      --red:#ff1f3d;--red2:#c10f27;--red3:#7a0616;--glow:rgba(255,31,61,.45);
+      --line:rgba(255,255,255,.08);--line-r:rgba(255,31,61,.35);
+      --max:1180px;--r:22px;
+      --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+      --display:Montserrat,Inter,system-ui,sans-serif;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;background:var(--bg);overflow-x:clip}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55;overflow-x:clip;-webkit-font-smoothing:antialiased}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;display:block}
+    ::selection{background:var(--red);color:#fff}
+    .wrap{width:min(var(--max),calc(100% - 32px));margin:auto}
+    .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+    /* ---------- Fond animé ---------- */
+    #globe{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.9}
+    .noise{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+    .scanlines{position:fixed;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,255,255,.018) 0 1px,transparent 1px 3px)}
+    .vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 50% 40%,transparent 40%,rgba(0,0,0,.75) 100%)}
+    .page{position:relative;z-index:2}
+
+    /* ---------- Intro « boot » ---------- */
+    #boot{position:fixed;inset:0;z-index:100;background:#050507;display:grid;place-items:center;transition:opacity .6s ease,visibility .6s}
+    #boot.done{opacity:0;visibility:hidden}
+    .boot-box{width:min(560px,calc(100% - 40px));font-family:var(--mono);font-size:13px;color:#d6d6de}
+    .boot-line{white-space:pre-wrap;min-height:1.6em}
+    .boot-line .ok{color:#3ddc84}.boot-line .r{color:var(--red)}
+    .boot-bar{height:3px;background:#1b1b22;border-radius:3px;margin-top:16px;overflow:hidden}
+    .boot-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--red2),var(--red));box-shadow:0 0 14px var(--red);transition:width .25s}
+    .boot-skip{margin-top:20px;background:none;border:1px solid var(--line);color:var(--dim);font:inherit;font-size:11px;padding:6px 12px;border-radius:999px;cursor:pointer}
+    .boot-skip:hover{color:#fff;border-color:var(--line-r)}
+
+    /* ---------- Curseur viseur ---------- */
+    .reticle{position:fixed;left:0;top:0;width:34px;height:34px;margin:-17px 0 0 -17px;z-index:90;pointer-events:none;transition:width .2s,height .2s,margin .2s,opacity .2s;opacity:0}
+    .reticle:before,.reticle:after{content:"";position:absolute;inset:0;border:2px solid var(--red);clip-path:polygon(0 0,30% 0,30% 2px,2px 2px,2px 30%,0 30%,0 0,100% 0,100% 30%,calc(100% - 2px) 30%,calc(100% - 2px) 2px,70% 2px,70% 0,100% 0,100% 100%,70% 100%,70% calc(100% - 2px),calc(100% - 2px) calc(100% - 2px),calc(100% - 2px) 70%,100% 70%,100% 100%,0 100%,0 70%,2px 70%,2px calc(100% - 2px),30% calc(100% - 2px),30% 100%,0 100%)}
+    .reticle:after{border:0;inset:50%;width:4px;height:4px;margin:-2px;background:var(--red);border-radius:50%;clip-path:none;box-shadow:0 0 8px var(--red)}
+    .reticle.on{opacity:1}
+    .reticle.hot{width:54px;height:54px;margin:-27px 0 0 -27px}
+    @media(hover:hover) and (pointer:fine){body.has-reticle,body.has-reticle a,body.has-reticle button,body.has-reticle summary{cursor:none}}
+
+    /* ---------- Barre de navigation ---------- */
+    .topbar{position:sticky;top:0;z-index:50;transition:background .3s,border-color .3s,backdrop-filter .3s;border-bottom:1px solid transparent}
+    .topbar.scrolled{background:rgba(7,7,10,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-color:var(--line)}
+    .topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:900;font-style:italic;letter-spacing:-.01em;font-size:19px}
+    .brand img{width:36px;height:36px;border-radius:50%;box-shadow:0 0 18px var(--glow)}
+    .brand em{color:var(--red);font-style:italic}
+    .nav{display:flex;align-items:center;gap:26px;font-size:13px;color:#c9c9d3;font-weight:600}
+    .nav a:not(.btn){position:relative}
+    .nav a:not(.btn):after{content:"";position:absolute;left:0;right:0;bottom:-5px;height:2px;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform .25s}
+    .nav a:not(.btn):hover{color:#fff}.nav a:not(.btn):hover:after{transform:scaleX(1)}
+
+    /* ---------- Boutons ---------- */
+    .btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:14px;padding:15px 22px;font-family:Inter,sans-serif;font-weight:800;font-size:15px;cursor:pointer;transition:transform .2s ease,box-shadow .2s,background .2s;will-change:transform;isolation:isolate}
+    .btn-primary{background:linear-gradient(120deg,#ff3550,#d10d2a 60%,#a20a20);color:#fff;box-shadow:0 10px 34px rgba(255,31,61,.35),inset 0 1px rgba(255,255,255,.3)}
+    .btn-primary:hover{box-shadow:0 14px 44px rgba(255,31,61,.55),inset 0 1px rgba(255,255,255,.3)}
+    .btn-primary:before{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);background-size:250% 100%;animation:shine 3.2s ease-in-out infinite;z-index:-1;mix-blend-mode:overlay}
+    @keyframes shine{0%,60%{background-position:150% 0}100%{background-position:-50% 0}}
+    .btn-ghost{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.14);color:#fff}
+    .btn-ghost:hover{border-color:var(--red);background:rgba(255,31,61,.08)}
+    .btn-sm{padding:10px 15px;font-size:13px;border-radius:11px}
+    .btn-pulse:after{content:"";position:absolute;inset:-4px;border-radius:18px;border:2px solid var(--red);opacity:0;animation:pulse 2.4s ease-out infinite;z-index:-2}
+    @keyframes pulse{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.18,1.45)}}
+    .wa{width:18px;height:18px;flex:none}
+
+    /* ---------- Hero ---------- */
+    .hero{position:relative;padding:28px 0 40px;min-height:calc(100svh - 70px);display:flex;flex-direction:column;justify-content:center}
+    .hero-inner{text-align:center;position:relative}
+    .live-pill{display:inline-flex;align-items:center;gap:10px;padding:8px 14px 8px 10px;border-radius:999px;border:1px solid var(--line-r);background:rgba(255,31,61,.08);font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:#ffb3bd}
+    .live-pill b{background:var(--red);color:#fff;padding:3px 7px;border-radius:5px;letter-spacing:.1em;font-size:10.5px;animation:blink 1.6s steps(2) infinite}
+    @keyframes blink{50%{opacity:.55}}
+    .logo-stage{position:relative;width:min(980px,100%);margin:18px auto 0;aspect-ratio:3/1}
+    .logo-stage img{-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent),linear-gradient(transparent,#000 16%,#000 84%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 14%,#000 86%,transparent),linear-gradient(transparent,#000 16%,#000 84%,transparent);mask-composite:intersect;position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 0 40px rgba(255,31,61,.25))}
+    .logo-main{animation:float 6s ease-in-out infinite}
+    @keyframes float{50%{transform:translateY(-8px)}}
+    .logo-glitch{opacity:0;mix-blend-mode:screen;pointer-events:none}
+    .logo-glitch.g1{filter:drop-shadow(0 0 0 red) hue-rotate(-20deg)}
+    .logo-stage.glitching .logo-glitch.g1{animation:glitch1 .38s steps(2) 1}
+    .logo-stage.glitching .logo-glitch.g2{animation:glitch2 .38s steps(2) 1}
+    @keyframes glitch1{0%{opacity:.8;transform:translate(-8px,2px);clip-path:inset(10% 0 60% 0)}33%{transform:translate(6px,-2px);clip-path:inset(55% 0 20% 0)}66%{transform:translate(-4px,0);clip-path:inset(30% 0 45% 0)}100%{opacity:0}}
+    @keyframes glitch2{0%{opacity:.7;transform:translate(7px,-1px);clip-path:inset(65% 0 5% 0);filter:saturate(0) brightness(2)}50%{transform:translate(-6px,1px);clip-path:inset(5% 0 75% 0)}100%{opacity:0}}
+    .logo-scan{position:absolute;inset:0;pointer-events:none;overflow:hidden;border-radius:20px}
+    .logo-scan:before{content:"";position:absolute;left:0;right:0;height:22%;top:-25%;background:linear-gradient(180deg,transparent,rgba(255,31,61,.16) 70%,rgba(255,80,100,.55) 98%,transparent);animation:sweep 4.5s cubic-bezier(.6,0,.4,1) infinite;mix-blend-mode:screen}
+    @keyframes sweep{0%{top:-25%}55%,100%{top:110%}}
+    .typer{font-family:var(--mono);font-size:clamp(14px,2vw,18px);color:#e9e9ef;margin:4px 0 0;min-height:1.6em}
+    .typer .caret{display:inline-block;width:.6em;height:1.1em;vertical-align:-.18em;background:var(--red);margin-left:2px;animation:blink 1s steps(2) infinite}
+    .typer .t{color:var(--red);font-weight:700}
+    .hero h1{font-family:var(--display);font-weight:900;font-size:clamp(28px,4.6vw,56px);line-height:1.04;letter-spacing:-.035em;margin:22px auto 14px;max-width:900px}
+    .hero h1 .accent{color:var(--red);font-style:italic;text-shadow:0 0 30px rgba(255,31,61,.35)}
+    .lead{font-size:clamp(15px,1.7vw,18px);color:#c7c7d1;max-width:680px;margin:0 auto 26px}
+    .hero-actions{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:30px}
+    .hero-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+    .meta{display:flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:14px;background:rgba(17,17,23,.65);backdrop-filter:blur(6px);font-size:13px;text-align:left}
+    .meta svg{width:20px;height:20px;color:var(--red);flex:none}
+    .meta b{display:block;font-size:13.5px}.meta small{color:var(--muted)}
+    .scroll-hint{margin:34px auto 0;width:24px;height:40px;border:2px solid rgba(255,255,255,.25);border-radius:14px;position:relative}
+    .scroll-hint:after{content:"";position:absolute;left:50%;top:7px;width:4px;height:8px;margin-left:-2px;border-radius:2px;background:var(--red);animation:wheel 1.8s ease-in-out infinite}
+    @keyframes wheel{0%{opacity:0;transform:translateY(0)}30%{opacity:1}100%{opacity:0;transform:translateY(14px)}}
+
+    /* ---------- Bandeau défilant ---------- */
+    .ticker{position:relative;border-block:1px solid var(--line-r);background:linear-gradient(90deg,rgba(255,31,61,.12),rgba(255,31,61,.04),rgba(255,31,61,.12));overflow:hidden;transform:rotate(-1.2deg);margin:10px -20px}
+    .ticker-track{display:flex;width:max-content;animation:marquee 38s linear infinite}
+    .ticker span{font-family:var(--display);font-weight:900;font-style:italic;font-size:clamp(18px,2.4vw,26px);text-transform:uppercase;padding:14px 22px;white-space:nowrap;color:#fff}
+    .ticker span:nth-child(even){color:transparent;-webkit-text-stroke:1px rgba(255,31,61,.85)}
+    @keyframes marquee{to{transform:translateX(-50%)}}
+
+    /* ---------- Sections ---------- */
+    .section{padding:96px 0;position:relative}
+    .head{max-width:760px;margin:0 auto 44px;text-align:center}
+    .kicker{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.24em;text-transform:uppercase;color:var(--red);font-weight:700}
+    .kicker:before{content:"// "}
+    h2{font-family:var(--display);font-weight:900;font-size:clamp(28px,4.2vw,48px);line-height:1.06;letter-spacing:-.035em;margin:12px 0 14px}
+    h2 em{color:var(--red)}
+    .head p{color:var(--muted);margin:0;font-size:16px}
+
+    /* Chiffres choc */
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .stat{padding:28px 24px;border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(160deg,rgba(255,31,61,.07),rgba(17,17,23,.8) 45%);text-align:left;position:relative;overflow:hidden}
+    .stat b{display:block;font-family:var(--display);font-weight:900;font-size:clamp(40px,5vw,58px);line-height:1;color:#fff;letter-spacing:-.04em}
+    .stat b i{color:var(--red);font-style:normal}
+    .stat p{margin:10px 0 0;color:var(--muted);font-size:14px}
+
+    /* Démo interactive */
+    .lab{display:grid;grid-template-columns:.95fr 1.05fr;gap:22px;align-items:stretch}
+    .lab-panel{border:1px solid var(--line-r);border-radius:var(--r);background:linear-gradient(160deg,rgba(22,22,29,.92),rgba(10,10,14,.95));box-shadow:0 30px 80px rgba(0,0,0,.5),0 0 60px rgba(255,31,61,.08);overflow:hidden;display:flex;flex-direction:column}
+    .lab-bar{display:flex;align-items:center;gap:7px;padding:12px 16px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--dim)}
+    .lab-bar i{width:10px;height:10px;border-radius:50%;background:#2a2a33}.lab-bar i:first-child{background:var(--red)}
+    .lab-bar span{margin-left:auto}
+    .console{font-family:var(--mono);font-size:12.5px;padding:16px 18px;flex:1;min-height:300px;max-height:360px;overflow:auto;color:#cfcfd8}
+    .console div{margin-bottom:4px;animation:fadeIn .3s ease}
+    .console .c-r{color:var(--red)}.console .c-g{color:#3ddc84}.console .c-d{color:var(--dim)}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(4px)}}
+    .lab-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 16px;border-top:1px solid var(--line)}
+    .input-fake{flex:1;min-width:180px;font-family:var(--mono);font-size:13px;padding:11px 13px;border-radius:10px;border:1px solid var(--line);background:#0a0a0e;color:#fff}
+    .graph-wrap{position:relative;flex:1;min-height:380px}
+    #graph{position:absolute;inset:0;width:100%;height:100%}
+    .score{display:flex;align-items:center;gap:16px;padding:14px 18px;border-top:1px solid var(--line)}
+    .score-ring{--p:0;width:64px;height:64px;border-radius:50%;flex:none;display:grid;place-items:center;background:conic-gradient(var(--red) calc(var(--p)*1%),#22222b 0);position:relative}
+    .score-ring:before{content:"";position:absolute;inset:6px;border-radius:50%;background:#101015}
+    .score-ring b{position:relative;font-family:var(--display);font-weight:900;font-size:17px}
+    .score small{display:block;color:var(--dim);font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+    .score strong{font-size:14px}
+    .disclaimer{font-size:12px;color:var(--dim);text-align:center;margin-top:14px}
+
+    /* Programme */
+    .topics{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    .topic{--mx:50%;--my:50%;position:relative;padding:26px;border:1px solid var(--line);border-radius:var(--r);background:rgba(17,17,23,.78);overflow:hidden;transition:transform .25s ease,border-color .25s;transform-style:preserve-3d}
+    .topic:before{content:"";position:absolute;inset:0;background:radial-gradient(380px circle at var(--mx) var(--my),rgba(255,31,61,.16),transparent 45%);opacity:0;transition:opacity .3s;pointer-events:none}
+    .topic:hover{border-color:var(--line-r)}.topic:hover:before{opacity:1}
+    .topic .num{font-family:var(--mono);font-size:12px;color:var(--red);letter-spacing:.14em}
+    .topic svg{width:34px;height:34px;color:var(--red);margin:14px 0 14px;filter:drop-shadow(0 0 10px rgba(255,31,61,.5))}
+    .topic h3{font-family:var(--display);font-weight:800;font-size:19px;margin:0 0 8px;letter-spacing:-.01em}
+    .topic p{color:var(--muted);font-size:14px;margin:0}
+
+    /* Quiz */
+    .quiz{max-width:760px;margin:auto;border:1px solid var(--line);border-radius:var(--r);background:rgba(17,17,23,.85);padding:30px;position:relative;overflow:hidden}
+    .quiz-progress{height:4px;background:#1f1f27;border-radius:4px;margin-bottom:24px;overflow:hidden}
+    .quiz-progress i{display:block;height:100%;width:0;background:var(--red);box-shadow:0 0 12px var(--red);transition:width .4s ease}
+    .q-step{font-family:var(--mono);font-size:12px;color:var(--dim);letter-spacing:.14em;text-transform:uppercase}
+    .q-text{font-family:var(--display);font-weight:800;font-size:clamp(20px,2.6vw,26px);margin:8px 0 22px;letter-spacing:-.015em;line-height:1.2}
+    .q-answers{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .q-answers button{font:inherit;font-weight:700;padding:16px;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.03);color:#fff;cursor:pointer;transition:.2s}
+    .q-answers button:hover{border-color:var(--red);background:rgba(255,31,61,.1);transform:translateY(-2px)}
+    .q-result{text-align:center;animation:fadeIn .4s ease}
+    .q-result .big{font-family:var(--display);font-weight:900;font-size:64px;line-height:1;color:var(--red);text-shadow:0 0 30px rgba(255,31,61,.4)}
+    .q-result ul{text-align:left;color:#d0d0da;font-size:14px;margin:18px auto;max-width:520px;padding-left:20px}
+    .q-result li{margin-bottom:6px}
+
+    /* Rendez-vous */
+    .rdv{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:center}
+    .countdown{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .cd{position:relative;padding:20px 8px 14px;border-radius:18px;border:1px solid var(--line-r);background:linear-gradient(180deg,rgba(255,31,61,.12),rgba(17,17,23,.9));text-align:center;overflow:hidden}
+    .cd:after{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:rgba(0,0,0,.55)}
+    .cd b{display:block;font-family:var(--display);font-weight:900;font-size:clamp(34px,5vw,56px);line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+    .cd b.tick{animation:tick .45s ease}
+    @keyframes tick{0%{transform:translateY(-35%);opacity:.2;filter:blur(2px)}100%{transform:none;opacity:1}}
+    .cd small{display:block;margin-top:8px;font-family:var(--mono);font-size:10.5px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+    .rdv-info{display:grid;gap:12px}
+    .rdv-info .meta{padding:16px 18px}
+    .rdv-tools{display:flex;flex-wrap:wrap;gap:10px;margin-top:4px}
+    .live-now{display:none;font-family:var(--display);font-weight:900;font-size:clamp(30px,5vw,54px);color:var(--red);text-align:center;animation:blink 1s steps(2) infinite}
+
+    /* CTA final */
+    .join-card{position:relative;overflow:hidden;text-align:center;padding:64px 26px;border:1px solid var(--line-r);border-radius:30px;background:radial-gradient(ellipse at 50% 0%,rgba(255,31,61,.25),transparent 60%),linear-gradient(160deg,#16161d,#09090c)}
+    .join-card .radar{position:absolute;width:640px;aspect-ratio:1;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%;background:repeating-radial-gradient(circle,transparent 0 58px,rgba(255,31,61,.1) 59px 60px);opacity:.7;pointer-events:none}
+    .join-card .radar:before{content:"";position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,rgba(255,31,61,.28),transparent 60deg);animation:spin 5s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .join-card > *{position:relative}
+    .join-card h2{max-width:780px;margin:12px auto}
+    .join-card p{max-width:600px;margin:0 auto 28px;color:#c9c9d3}
+    .join-card .btn{font-size:17px;padding:18px 28px}
+    .join-note{font-size:12px!important;margin-top:18px!important;color:var(--dim)!important}
+
+    /* FAQ */
+    .faq{max-width:820px;margin:auto}
+    details{border:1px solid var(--line);border-radius:16px;padding:0 20px;margin-bottom:10px;background:rgba(17,17,23,.7);transition:border-color .2s}
+    details[open]{border-color:var(--line-r)}
+    summary{cursor:pointer;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:18px 0}
+    summary::-webkit-details-marker{display:none}
+    summary:after{content:"+";font-family:var(--mono);color:var(--red);font-size:22px;transition:transform .25s}
+    details[open] summary:after{transform:rotate(45deg)}
+    details p{color:var(--muted);font-size:14.5px;margin:0 0 18px}
+
+    footer{border-top:1px solid var(--line);padding:30px 0 100px;color:var(--dim);font-size:13px}
+    .foot{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:center}
+
+    /* Barre CTA mobile */
+    .sticky-cta{position:fixed;left:12px;right:12px;bottom:12px;z-index:60;display:none;transform:translateY(130%);transition:transform .35s cubic-bezier(.2,.9,.3,1.2)}
+    .sticky-cta.show{transform:none}
+    .sticky-cta .btn{width:100%}
+
+    .toast{position:fixed;left:50%;bottom:86px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#16161d;border:1px solid var(--line-r);color:#fff;padding:12px 16px;border-radius:12px;font-size:13px;z-index:70;transition:.25s;max-width:calc(100% - 30px);text-align:center}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+
+    /* Apparition au défilement */
+    .reveal{opacity:0;transform:translateY(34px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.8,.2,1)}
+    .reveal.in{opacity:1;transform:none}
+
+    @media(max-width:900px){
+      .nav a:not(.btn){display:none}
+      .lab,.rdv{grid-template-columns:1fr}
+      .topics{grid-template-columns:repeat(2,1fr)}
+      .stats{grid-template-columns:1fr}
+      .sticky-cta{display:block}
+    }
+    @media(max-width:560px){
+      .topbar .btn{display:none}
+      .section{padding:70px 0}
+      .topics{grid-template-columns:1fr}
+      .q-answers{grid-template-columns:1fr}
+      .quiz{padding:22px}
+      .hero-actions .btn{width:100%}
+      .meta{width:100%}
+      .countdown{gap:7px}.cd{padding:14px 4px 10px}
+      .graph-wrap{min-height:320px}
+      .join-card{padding:46px 18px}.join-card .btn{width:100%;font-size:15px}
+      .logo-stage{margin-top:10px}.br-d{display:none}.live-pill{font-size:10px;letter-spacing:.08em}
+    }
+    @media(prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+      .reveal{opacity:1;transform:none}
+    }
+  </style>
+</head>
+<body>
+  <!-- ===================== CONFIGURATION ===================== -->
+  <script>
+    const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/LajTbHAOTveFpJyjrk7lVI";
+    const EVENT_DATE = "2026-11-14T20:00:00+01:00";   // date et heure du direct
+    const EVENT_DURATION_MIN = 90;                     // durée estimée (agenda)
+  </script>
+
+  <!-- Intro type terminal -->
+  <div id="boot" aria-hidden="true">
+    <div class="boot-box">
+      <div id="boot-lines"></div>
+      <div class="boot-bar"><i id="boot-bar"></i></div>
+      <button class="boot-skip" id="boot-skip" type="button">Passer l'intro ↵</button>
+    </div>
+  </div>
+
+  <canvas id="globe" aria-hidden="true"></canvas>
+  <div class="noise"></div><div class="scanlines"></div><div class="vignette"></div>
+  <div class="reticle" id="reticle" aria-hidden="true"></div>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-wa" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.7-.4Z"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-live" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M7.8 7.8a6 6 0 0 0 0 8.4M16.2 7.8a6 6 0 0 1 0 8.4M4.9 4.9a10 10 0 0 0 0 14.2M19.1 4.9a10 10 0 0 1 0 14.2"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></symbol>
+  </svg>
+
+  <div class="page">
+  <header class="topbar" id="topbar">
+    <div class="wrap">
+      <a class="brand" href="#accueil" aria-label="OSINT 360°, accueil"><img src="assets/favicon.webp" alt="" width="36" height="36"> OSINT <em>360°</em></a>
+      <nav class="nav" aria-label="Navigation principale">
+        <a href="#labo">Le labo</a><a href="#programme">Programme</a><a href="#test">Le test</a><a href="#direct">Le direct</a><a href="#faq">FAQ</a>
+        <a class="btn btn-primary btn-sm js-wa" href="#rejoindre"><svg class="wa"><use href="#i-wa"/></svg> Rejoindre</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- ===================== HERO ===================== -->
+    <section class="hero" id="accueil">
+      <div class="wrap hero-inner">
+        <div class="live-pill"><b>● LIVE</b> TikTok · Sam. 14 nov. · 20 h</div>
+        <div class="logo-stage" id="logoStage">
+          <img class="logo-main" src="assets/logo.webp" alt="OSINT 360° Conférence — Enquête, Traces, Identité numérique, Protection" width="1400" height="467">
+          <img class="logo-glitch g1" alt="" aria-hidden="true">
+          <img class="logo-glitch g2" alt="" aria-hidden="true">
+          <div class="logo-scan"></div>
+        </div>
+        <p class="typer" aria-live="off"><span class="t">&gt;</span> <span id="typer"></span><span class="caret"></span></p>
+        <h1>On sait plus de choses sur vous<br class="br-d"> que <span class="accent">vous ne l'imaginez.</span></h1>
+        <p class="lead">Une adresse e-mail, un pseudo, une photo… Il suffit de quelques traces publiques pour reconstituer une identité. Pendant le direct, on vous montre comment — et surtout comment vous protéger.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary btn-pulse js-wa magnetic" href="#rejoindre"><svg class="wa"><use href="#i-wa"/></svg> Rejoindre le groupe WhatsApp</a>
+          <a class="btn btn-ghost magnetic" href="#labo">Lancer une enquête fictive →</a>
+        </div>
+        <div class="hero-meta">
+          <div class="meta"><svg><use href="#i-cal"/></svg><span><b>Samedi 14 novembre 2026</b><small>Rendez-vous à ne pas manquer</small></span></div>
+          <div class="meta"><svg><use href="#i-clock"/></svg><span><b>20 h 00 · UTC+1</b><small id="heroCountdown">Bientôt</small></span></div>
+          <div class="meta"><svg><use href="#i-live"/></svg><span><b>TikTok LIVE</b><small>Lien envoyé dans le groupe</small></span></div>
+        </div>
+        <div class="scroll-hint" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <div class="ticker" aria-hidden="true"><div class="ticker-track" id="ticker"></div></div>
+
+    <!-- ===================== CHIFFRES ===================== -->
+    <section class="section" id="pourquoi">
+      <div class="wrap">
+        <div class="head reveal"><span class="kicker" data-scramble>Pourquoi venir</span><h2>Votre vie privée tient à <em>quelques indices.</em></h2><p>L'OSINT (Open Source Intelligence), c'est l'art d'enquêter uniquement à partir d'informations publiques. Les mêmes techniques servent aux journalistes… et aux escrocs.</p></div>
+        <div class="stats">
+          <div class="stat reveal"><b><span data-count="1">0</span><i>&nbsp;photo</i></b><p>peut suffire à situer un domicile : reflets, panneaux, métadonnées, angle du soleil.</p></div>
+          <div class="stat reveal"><b><span data-count="3">0</span><i>&nbsp;indices</i></b><p>croisés — un pseudo, un e-mail, une ville — et un profil anonyme devient une personne réelle.</p></div>
+          <div class="stat reveal"><b><span data-count="360">0</span><i>°</i></b><p>une vision complète : enquêter, comprendre les traces, mesurer les risques et se protéger.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== LABO INTERACTIF ===================== -->
+    <section class="section" id="labo">
+      <div class="wrap">
+        <div class="head reveal"><span class="kicker" data-scramble>Le labo · démo interactive</span><h2>Une adresse e-mail. <em>Combien de pistes ?</em></h2><p>Lancez l'enquête sur un profil 100 % fictif et regardez les indices se relier entre eux, en temps réel.</p></div>
+        <div class="lab reveal">
+          <div class="lab-panel">
+            <div class="lab-bar"><i></i><i></i><i></i><span>osint360@labo:~</span></div>
+            <div class="console" id="console" role="log" aria-live="polite"><div class="c-d"># Profil fictif prêt. Cliquez sur « Analyser ».</div></div>
+            <div class="lab-foot">
+              <input class="input-fake" id="target" value="camille.d.photo@exemple.fr" readonly aria-label="Cible fictive">
+              <button class="btn btn-primary btn-sm" id="runLab" type="button">Analyser ▶</button>
+            </div>
+          </div>
+          <div class="lab-panel">
+            <div class="lab-bar"><i></i><i></i><i></i><span>graphe_de_liens.map</span></div>
+            <div class="graph-wrap"><canvas id="graph" aria-label="Graphe des informations reliées entre elles"></canvas></div>
+            <div class="score"><div class="score-ring" id="ring"><b id="scoreVal">0%</b></div><div><small>Niveau d'exposition</small><strong id="scoreTxt">En attente d'analyse…</strong></div></div>
+          </div>
+        </div>
+        <p class="disclaimer">Simulation pédagogique : personne, données et sources entièrement inventées. Aucune recherche réelle n'est effectuée.</p>
+      </div>
+    </section>
+
+    <!-- ===================== PROGRAMME ===================== -->
+    <section class="section" id="programme">
+      <div class="wrap">
+        <div class="head reveal"><span class="kicker" data-scramble>Au programme</span><h2>Enquête · Traces · Identité · <em>Protection</em></h2><p>Six chapitres concrets, des démonstrations sur des cas fictifs ou autorisés, et des réflexes applicables dès le lendemain.</p></div>
+        <div class="topics">
+          <article class="topic reveal"><span class="num">01 / ENQUÊTE</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><h3>L'adresse e-mail</h3><p>Ce qu'une simple adresse peut révéler : comptes associés, fuites de données, habitudes.</p></article>
+          <article class="topic reveal"><span class="num">02 / ENQUÊTE</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><h3>Nom, pseudo & identité</h3><p>Comment des profils éparpillés sur plusieurs réseaux sont recoupés pour n'en former qu'un.</p></article>
+          <article class="topic reveal"><span class="num">03 / TRACES</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12Z"/><circle cx="12" cy="9" r="2.5"/></svg><h3>Géolocalisation</h3><p>Lire une photo comme un enquêteur : décor, ombres, panneaux, reflets.</p></article>
+          <article class="topic reveal"><span class="num">04 / TRACES</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg><h3>Métadonnées</h3><p>Les informations cachées dans vos fichiers : appareil, date, parfois position GPS.</p></article>
+          <article class="topic reveal"><span class="num">05 / IDENTITÉ NUMÉRIQUE</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="5" cy="12" r="2.5"/><circle cx="19" cy="5" r="2.5"/><circle cx="19" cy="19" r="2.5"/><path d="m7.3 11 9.4-4.8M7.3 13l9.4 4.8"/></svg><h3>Traces numériques</h3><p>Pourquoi des informations anodines deviennent sensibles une fois croisées.</p></article>
+          <article class="topic reveal"><span class="num">06 / PROTECTION</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 3 4 6v6c0 5 3.4 8.4 8 9 4.6-.6 8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg><h3>Risques & protection</h3><p>Arnaques, usurpation, harcèlement : les abus possibles et les bons réflexes pour s'en prémunir.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== QUIZ ===================== -->
+    <section class="section" id="test">
+      <div class="wrap">
+        <div class="head reveal"><span class="kicker" data-scramble>Autodiagnostic · 30 secondes</span><h2>Quel est <em>votre</em> niveau d'exposition ?</h2><p>Cinq questions, aucune donnée envoyée. Le résultat reste sur votre écran.</p></div>
+        <div class="quiz reveal" id="quiz" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- ===================== RENDEZ-VOUS ===================== -->
+    <section class="section" id="direct">
+      <div class="wrap">
+        <div class="head reveal"><span class="kicker" data-scramble>Compte à rebours</span><h2>Le rendez-vous est <em>fixé.</em></h2></div>
+        <div class="rdv reveal">
+          <div>
+            <div class="countdown" id="countdown" aria-label="Compte à rebours avant la conférence">
+              <div class="cd"><b id="days">--</b><small>Jours</small></div>
+              <div class="cd"><b id="hours">--</b><small>Heures</small></div>
+              <div class="cd"><b id="minutes">--</b><small>Minutes</small></div>
+              <div class="cd"><b id="seconds">--</b><small>Secondes</small></div>
+            </div>
+            <div class="live-now" id="liveNow">● EN DIRECT MAINTENANT</div>
+          </div>
+          <div class="rdv-info">
+            <div class="meta"><svg><use href="#i-cal"/></svg><span><b>Samedi 14 novembre 2026</b><small>Ajoutez-le à votre agenda pour ne pas l'oublier</small></span></div>
+            <div class="meta"><svg><use href="#i-clock"/></svg><span><b>20 h 00 (UTC+1)</b><small id="localTime">Heure locale calculée automatiquement</small></span></div>
+            <div class="meta"><svg><use href="#i-live"/></svg><span><b>TikTok LIVE</b><small>Le lien du direct est communiqué dans le groupe WhatsApp</small></span></div>
+            <div class="rdv-tools">
+              <button class="btn btn-ghost btn-sm" id="addCal" type="button"><svg class="wa"><use href="#i-cal"/></svg> Ajouter à l'agenda</button>
+              <button class="btn btn-ghost btn-sm" id="share" type="button"><svg class="wa"><use href="#i-share"/></svg> Partager l'événement</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== CTA ===================== -->
+    <section class="section" id="rejoindre">
+      <div class="wrap">
+        <div class="join-card reveal">
+          <div class="radar" aria-hidden="true"></div>
+          <span class="kicker" data-scramble>Accès aux informations</span>
+          <h2>Prêt à découvrir ce que l'on peut <em>savoir sur vous ?</em></h2>
+          <p>Aucun formulaire. Rejoignez le groupe WhatsApp : rappels, lien du direct et ressources après la conférence.</p>
+          <a class="btn btn-primary btn-pulse js-wa magnetic" href="#"><svg class="wa"><use href="#i-wa"/></svg> Rejoindre le groupe WhatsApp ↗</a>
+          <p class="join-note">C'est la seule étape. La conférence se déroule sur TikTok LIVE.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== FAQ ===================== -->
+    <section class="section" id="faq">
+      <div class="wrap">
+        <div class="head reveal"><span class="kicker" data-scramble>Questions fréquentes</span><h2>Avant de nous rejoindre.</h2></div>
+        <div class="faq reveal">
+          <details><summary>Comment s'inscrire à la conférence ?</summary><p>Cliquez sur « Rejoindre le groupe WhatsApp ». Aucun formulaire : le groupe sert à recevoir les rappels et le lien du direct.</p></details>
+          <details><summary>Où et quand se déroule la conférence ?</summary><p>En direct sur TikTok LIVE, le samedi 14 novembre 2026 à 20 h 00 (UTC+1).</p></details>
+          <details><summary>Faut-il déjà connaître l'OSINT ?</summary><p>Non. La conférence s'adresse aux curieux, aux débutants comme aux passionnés de cybersécurité.</p></details>
+          <details><summary>Des personnes réelles seront-elles recherchées en direct ?</summary><p>Non. Les démonstrations utilisent des identités fictives, des données de test ou des informations dont l'utilisation a été autorisée. Le but est d'apprendre à se protéger, jamais d'exposer quelqu'un.</p></details>
+          <details><summary>La conférence est-elle gratuite ?</summary><p>Oui : il suffit de rejoindre le groupe WhatsApp et d'être présent sur TikTok LIVE à l'heure du direct.</p></details>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="wrap foot"><span class="brand"><img src="assets/favicon.webp" alt="" width="36" height="36"> OSINT <em>360°</em></span><span>Samedi 14 novembre 2026 · 20 h 00 (UTC+1) · TikTok LIVE</span><span>Comprendre les traces. Protéger sa vie privée.</span></div></footer>
+  </div>
+
+  <div class="sticky-cta" id="stickyCta"><a class="btn btn-primary js-wa" href="#rejoindre"><svg class="wa"><use href="#i-wa"/></svg> Rejoindre le groupe WhatsApp</a></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+  (()=>{
+    const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const target = new Date(EVENT_DATE).getTime();
+    const sleep = ms => new Promise(r=>setTimeout(r,ms));
+    const toast = msg => { const t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("show"),2600); };
+
+    /* ---- Liens WhatsApp ---- */
+    $$(".js-wa").forEach(a=>{ a.href=WHATSAPP_GROUP_URL; a.target="_blank"; a.rel="noopener"; });
+
+    /* ---- Intro terminal (une fois par session) ---- */
+    const boot=$("#boot");
+    let seen=false; try{ seen=sessionStorage.getItem("osint360-boot")==="1"; }catch(e){}
+    const endBoot=()=>{ if(boot.classList.contains("done")) return; boot.classList.add("done"); try{sessionStorage.setItem("osint360-boot","1")}catch(e){} glitchLogo(); };
+    $("#boot-skip").onclick=endBoot;
+    if(seen||reduce){ boot.classList.add("done"); }
+    else (async()=>{
+      const lines=[
+        ["> initialisation de l'enquête…",""],
+        ["> cible : <span class='r'>VOUS</span>",""],
+        ["> collecte des traces publiques","<span class='ok'> [OK]</span>"],
+        ["> recoupement des identités","<span class='ok'> [OK]</span>"],
+        ["> profil reconstitué à <span class='r'>87 %</span>",""],
+        ["> ouverture du dossier OSINT 360°…",""]
+      ];
+      const box=$("#boot-lines"), bar=$("#boot-bar");
+      for(let i=0;i<lines.length;i++){
+        if(boot.classList.contains("done")) return;
+        const d=document.createElement("div"); d.className="boot-line"; box.appendChild(d);
+        const tmp=document.createElement("div"); tmp.innerHTML=lines[i][0]; const txt=tmp.textContent;
+        for(let k=1;k<=txt.length;k+=2){ d.textContent=txt.slice(0,k); await sleep(14); }
+        d.innerHTML=lines[i][0]+lines[i][1];
+        bar.style.width=((i+1)/lines.length*100)+"%";
+        await sleep(170);
+      }
+      await sleep(250); endBoot();
+    })();
+
+    /* ---- Glitch du logo ---- */
+    const stage=$("#logoStage"); stage.querySelectorAll(".logo-glitch").forEach(i=>i.src=stage.querySelector(".logo-main").src);
+    function glitchLogo(){ if(reduce) return; stage.classList.remove("glitching"); void stage.offsetWidth; stage.classList.add("glitching"); }
+    if(!reduce) setInterval(()=>{ if(Math.random()<.6) glitchLogo(); },4200);
+
+    /* ---- Machine à écrire ---- */
+    const words=["Enquête.","Traces.","Identité numérique.","Protection.","Ce que l'on sait sur vous."];
+    (async()=>{
+      const el=$("#typer"); if(reduce){ el.textContent=words.join(" · "); return; }
+      for(let i=0;;i=(i+1)%words.length){
+        const w=words[i];
+        for(let k=1;k<=w.length;k++){ el.textContent=w.slice(0,k); await sleep(55); }
+        await sleep(1500);
+        for(let k=w.length;k>=0;k--){ el.textContent=w.slice(0,k); await sleep(24); }
+        await sleep(250);
+      }
+    })();
+
+    /* ---- Bandeau défilant ---- */
+    const tick=["Enquête","Traces","Identité numérique","Protection","Métadonnées","Géolocalisation","Sources ouvertes","OSINT 360°"];
+    $("#ticker").innerHTML=[...tick,...tick,...tick,...tick].map(t=>`<span>${t}</span><span>✦</span>`).join("");
+
+    /* ---- Globe de points en rotation (fond) ---- */
+    const gc=$("#globe"), g=gc.getContext("2d");
+    let W,H,DPR, pts=[], pings=[];
+    const N=window.innerWidth<700?520:900;
+    for(let i=0;i<N;i++){ const y=1-(i/(N-1))*2, r=Math.sqrt(1-y*y), th=Math.PI*(3-Math.sqrt(5))*i; pts.push([Math.cos(th)*r,y,Math.sin(th)*r]); }
+    function sizeGlobe(){ DPR=Math.min(devicePixelRatio||1,2); W=gc.width=innerWidth*DPR; H=gc.height=innerHeight*DPR; }
+    sizeGlobe(); addEventListener("resize",sizeGlobe);
+    let rot=0, scrollY0=0, mxp=0, myp=0;
+    addEventListener("scroll",()=>{scrollY0=scrollY},{passive:true});
+    addEventListener("pointermove",e=>{ mxp=(e.clientX/innerWidth-.5); myp=(e.clientY/innerHeight-.5); },{passive:true});
+    function drawGlobe(){
+      g.clearRect(0,0,W,H);
+      const R=Math.min(W,H)*.48, cx=W*.5+mxp*30*DPR, cy=H*.55-scrollY0*.15*DPR+myp*20*DPR;
+      const tilt=.35+myp*.15, ct=Math.cos(tilt), st=Math.sin(tilt), cr=Math.cos(rot), sr=Math.sin(rot);
+      const glow=g.createRadialGradient(cx,cy,R*.2,cx,cy,R*1.25);
+      glow.addColorStop(0,"rgba(255,31,61,.10)"); glow.addColorStop(1,"rgba(255,31,61,0)");
+      g.fillStyle=glow; g.beginPath(); g.arc(cx,cy,R*1.25,0,7); g.fill();
+      const proj=[];
+      for(const [x,y,z] of pts){
+        const x1=x*cr-z*sr, z1=x*sr+z*cr, y1=y*ct-z1*st, z2=y*st+z1*ct;
+        if(z2<-.15) continue;
+        const a=Math.max(0,(z2+.15))*.85;
+        g.fillStyle=`rgba(255,${40+z2*40|0},${60+z2*30|0},${a*.75})`;
+        const s=(1.1+z2*1.3)*DPR;
+        g.fillRect(cx+x1*R-s/2,cy+y1*R-s/2,s,s);
+        proj.push([cx+x1*R,cy+y1*R,z2]);
+      }
+      if(!reduce && Math.random()<.04 && proj.length){ const p=proj[Math.random()*proj.length|0]; if(p[2]>.3) pings.push({x:p[0],y:p[1],t:0}); }
+      pings=pings.filter(p=>p.t<1);
+      for(const p of pings){ p.t+=.012; g.strokeStyle=`rgba(255,60,80,${1-p.t})`; g.lineWidth=1.5*DPR; g.beginPath(); g.arc(p.x,p.y,(4+p.t*40)*DPR,0,7); g.stroke(); g.fillStyle=`rgba(255,120,130,${1-p.t})`; g.fillRect(p.x-2*DPR,p.y-2*DPR,4*DPR,4*DPR); }
+      rot+=reduce?0:.0016;
+    }
+    (function loop(){ drawGlobe(); if(!reduce) requestAnimationFrame(loop); })();
+
+    /* ---- Curseur viseur ---- */
+    const ret=$("#reticle");
+    if(matchMedia("(hover:hover) and (pointer:fine)").matches && !reduce){
+      document.body.classList.add("has-reticle");
+      let rx=0,ry=0,tx=0,ty=0;
+      addEventListener("pointermove",e=>{tx=e.clientX;ty=e.clientY;ret.classList.add("on")});
+      document.addEventListener("pointerleave",()=>ret.classList.remove("on"));
+      (function f(){ rx+=(tx-rx)*.25; ry+=(ty-ry)*.25; ret.style.transform=`translate(${rx}px,${ry}px)`; requestAnimationFrame(f); })();
+      document.addEventListener("pointerover",e=>{ ret.classList.toggle("hot",!!e.target.closest("a,button,summary,.topic")); });
+    }
+
+    /* ---- Boutons magnétiques ---- */
+    if(!reduce) $$(".magnetic").forEach(b=>{
+      b.addEventListener("pointermove",e=>{ const r=b.getBoundingClientRect(); b.style.transform=`translate(${(e.clientX-r.left-r.width/2)*.18}px,${(e.clientY-r.top-r.height/2)*.3}px)`; });
+      b.addEventListener("pointerleave",()=>b.style.transform="");
+    });
+
+    /* ---- Cartes : lumière + inclinaison 3D ---- */
+    $$(".topic").forEach(c=>{
+      c.addEventListener("pointermove",e=>{ const r=c.getBoundingClientRect(), x=e.clientX-r.left, y=e.clientY-r.top;
+        c.style.setProperty("--mx",x+"px"); c.style.setProperty("--my",y+"px");
+        if(!reduce) c.style.transform=`perspective(800px) rotateX(${(y/r.height-.5)*-7}deg) rotateY(${(x/r.width-.5)*7}deg) translateY(-4px)`; });
+      c.addEventListener("pointerleave",()=>c.style.transform="");
+    });
+
+    /* ---- Barre de nav + CTA mobile ---- */
+    const onScroll=()=>{ $("#topbar").classList.toggle("scrolled",scrollY>20);
+      const joinTop=$("#rejoindre").getBoundingClientRect().top;
+      $("#stickyCta").classList.toggle("show",scrollY>innerHeight*.8 && (joinTop>innerHeight || joinTop<-400)); };
+    addEventListener("scroll",onScroll,{passive:true}); onScroll();
+
+    /* ---- Texte « décodé » ---- */
+    const CH="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#$%&@";
+    function scramble(el){ const fin=el.dataset.final||(el.dataset.final=el.textContent); if(reduce) return; let f=0; const tot=fin.length*2;
+      const id=setInterval(()=>{ el.textContent=fin.split("").map((c,i)=> c===" "||i<f/2 ? c : CH[Math.random()*CH.length|0]).join(""); if(++f>tot){clearInterval(id); el.textContent=fin;} },28); }
+
+    /* ---- Compteurs ---- */
+    function countUp(el){ const end=+el.dataset.count; if(reduce){el.textContent=end;return;} const t0=performance.now();
+      (function s(t){ const p=Math.min(1,(t-t0)/1400), e=1-Math.pow(1-p,3); el.textContent=Math.round(end*e); if(p<1) requestAnimationFrame(s); })(t0); }
+
+    /* ---- Apparition au défilement ---- */
+    const io=new IntersectionObserver(es=>es.forEach(e=>{ if(!e.isIntersecting) return; const el=e.target;
+      const sib=[...el.parentElement.children].filter(x=>x.classList.contains("reveal")); el.style.transitionDelay=(Math.max(0,sib.indexOf(el))*.08)+"s";
+      el.classList.add("in"); el.querySelectorAll("[data-scramble]").forEach(scramble); el.querySelectorAll("[data-count]").forEach(countUp); io.unobserve(el); }),{threshold:.15});
+    $$(".reveal").forEach(el=>io.observe(el));
+
+    /* ---- Labo : graphe de liens fictif ---- */
+    const cv=$("#graph"), cx=cv.getContext("2d");
+    let nodes=[], edges=[], gW=0, gH=0, gD=1, t0g=performance.now();
+    function sizeGraph(){ const r=cv.getBoundingClientRect(); gD=Math.min(devicePixelRatio||1,2); gW=r.width; gH=r.height; cv.width=gW*gD; cv.height=gH*gD; }
+    sizeGraph(); addEventListener("resize",sizeGraph);
+    const steps=[
+      {id:"mail",label:"camille.d.photo@…",x:.5,y:.5,log:"> recherche de l'adresse sur les services publics…",res:"  ↳ compte trouvé sur 4 plateformes",score:12,core:true},
+      {id:"pseudo",label:"Pseudo : camdphoto",x:.2,y:.24,from:"mail",log:"> extraction du pseudonyme récurrent…",res:"  ↳ « camdphoto » réutilisé partout",score:24},
+      {id:"photo",label:"Photo de profil",x:.8,y:.22,from:"pseudo",log:"> recherche inversée de l'image…",res:"  ↳ même photo sur un site de portfolio",score:38},
+      {id:"exif",label:"EXIF : GPS",x:.86,y:.6,from:"photo",log:"> lecture des métadonnées du fichier…",res:"  ↳ coordonnées GPS encore présentes !",score:55,hot:true},
+      {id:"ville",label:"Ville : Lyon 7e",x:.62,y:.84,from:"exif",log:"> géolocalisation des coordonnées…",res:"  ↳ quartier identifié",score:67},
+      {id:"job",label:"Employeur",x:.2,y:.74,from:"pseudo",log:"> croisement avec les réseaux pro…",res:"  ↳ poste et entreprise visibles",score:78},
+      {id:"fuite",label:"Fuite de données",x:.12,y:.48,from:"mail",log:"> vérification dans les fuites connues…",res:"  ↳ adresse présente dans 2 fuites",score:87,hot:true}
+    ];
+    function drawGraph(){
+      cx.setTransform(gD,0,0,gD,0,0); cx.clearRect(0,0,gW,gH);
+      const t=(performance.now()-t0g)/1000;
+      cx.strokeStyle="rgba(255,255,255,.04)"; cx.lineWidth=1;
+      for(let x=0;x<gW;x+=28){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,gH);cx.stroke();}
+      for(let y=0;y<gH;y+=28){cx.beginPath();cx.moveTo(0,y);cx.lineTo(gW,y);cx.stroke();}
+      const P=n=>[n.x*gW,n.y*gH];
+      for(const e of edges){ e.p=Math.min(1,e.p+.035); const [x1,y1]=P(e.a),[x2,y2]=P(e.b), xe=x1+(x2-x1)*e.p, ye=y1+(y2-y1)*e.p;
+        cx.strokeStyle="rgba(255,31,61,.55)"; cx.lineWidth=1.4; cx.setLineDash([5,5]); cx.lineDashOffset=-t*20; cx.beginPath(); cx.moveTo(x1,y1); cx.lineTo(xe,ye); cx.stroke(); cx.setLineDash([]);
+        if(e.p>=1){ const k=(t*.6+e.o)%1; cx.fillStyle="#ff6a7d"; cx.beginPath(); cx.arc(x1+(x2-x1)*k,y1+(y2-y1)*k,2.2,0,7); cx.fill(); } }
+      cx.font="600 11.5px 'JetBrains Mono',monospace"; cx.textAlign="center";
+      for(const n of nodes){ n.s=Math.min(1,n.s+.06); const [x,y]=P(n), r=(n.core?15:10)*n.s;
+        const pulse=(Math.sin(t*3+n.x*10)+1)/2;
+        cx.fillStyle=`rgba(255,31,61,${.12+.12*pulse})`; cx.beginPath(); cx.arc(x,y,r+8+pulse*4,0,7); cx.fill();
+        cx.fillStyle=n.hot?"#ff1f3d":(n.core?"#fff":"#1a1a22"); cx.strokeStyle="#ff1f3d"; cx.lineWidth=2; cx.beginPath(); cx.arc(x,y,r,0,7); cx.fill(); cx.stroke();
+        const w=cx.measureText(n.label).width+14, ly=y+r+18, lx=Math.min(Math.max(x,w/2+4),gW-w/2-4);
+        cx.globalAlpha=n.s; cx.fillStyle="rgba(10,10,14,.9)"; cx.strokeStyle=n.hot?"#ff1f3d":"rgba(255,255,255,.18)"; cx.lineWidth=1;
+        cx.beginPath(); cx.roundRect?cx.roundRect(lx-w/2,ly-13,w,20,6):cx.rect(lx-w/2,ly-13,w,20); cx.fill(); cx.stroke();
+        cx.fillStyle="#fff"; cx.fillText(n.label,lx,ly+1); cx.globalAlpha=1; }
+      if(!nodes.length){ cx.fillStyle="rgba(255,255,255,.35)"; cx.font="500 13px Inter,sans-serif"; cx.fillText("Le graphe apparaîtra ici",gW/2,gH/2); }
+      requestAnimationFrame(drawGraph);
+    }
+    requestAnimationFrame(drawGraph);
+    const con=$("#console");
+    const log=(html,cls)=>{ const d=document.createElement("div"); if(cls) d.className=cls; d.innerHTML=html; con.appendChild(d); con.scrollTop=con.scrollHeight; };
+    function setScore(v){ $("#ring").style.setProperty("--p",v); $("#scoreVal").textContent=v+"%";
+      $("#scoreTxt").textContent= v<30?"Exposition faible…": v<60?"Exposition notable":v<85?"Exposition élevée":"Profil quasi reconstitué"; }
+    let running=false;
+    $("#runLab").onclick=async()=>{
+      if(running) return; running=true; const btn=$("#runLab"); btn.textContent="Analyse…"; btn.disabled=true;
+      nodes=[]; edges=[]; con.innerHTML=""; setScore(0);
+      log("$ osint360 --cible camille.d.photo@exemple.fr --fictif","c-d");
+      for(const s of steps){
+        await sleep(reduce?50:420); log(s.log); await sleep(reduce?50:520);
+        const n={...s,s:0}; nodes.push(n);
+        if(s.from){ const a=nodes.find(x=>x.id===s.from); edges.push({a,b:n,p:0,o:Math.random()}); }
+        log(s.res, s.hot?"c-r":"c-g"); setScore(s.score);
+      }
+      await sleep(400);
+      log("<b>✔ 7 indices publics → 1 identité.</b>","c-r");
+      log("Bonne nouvelle : chaque piste se ferme. On vous montre comment en direct.","c-d");
+      btn.textContent="Relancer ↻"; btn.disabled=false; running=false;
+    };
+
+    /* ---- Quiz d'exposition ---- */
+    const Q=[
+      ["Utilisez-vous le même pseudo sur plusieurs réseaux ?","Utilisez un pseudo différent par usage : c'est le premier fil que tire un enquêteur."],
+      ["Vos comptes affichent-ils votre vrai nom et votre ville ?","Masquez la ville et limitez les infos visibles du public dans les paramètres."],
+      ["Publiez-vous des photos prises chez vous ou près de chez vous ?","Vérifiez l'arrière-plan (fenêtre, rue, plaque) avant de publier, et différez vos publications."],
+      ["Envoyez-vous des photos en fichier original (e-mail, cloud) ?","Les fichiers originaux gardent souvent leurs métadonnées : supprimez-les avant partage."],
+      ["Utilisez-vous le même mot de passe sur plusieurs sites ?","Un gestionnaire de mots de passe + double authentification neutralisent la plupart des fuites."]
+    ];
+    let qi=0, yes=[];
+    function renderQuiz(){
+      const z=$("#quiz");
+      if(qi<Q.length){
+        z.innerHTML=`<div class="quiz-progress"><i style="width:${qi/Q.length*100}%"></i></div><div class="q-step">Question ${qi+1} / ${Q.length}</div><div class="q-text">${Q[qi][0]}</div><div class="q-answers"><button type="button" data-a="1">Oui</button><button type="button" data-a="0">Non</button></div>`;
+        z.querySelectorAll("button").forEach(b=>b.onclick=()=>{ if(b.dataset.a==="1") yes.push(qi); qi++; renderQuiz(); });
+      } else {
+        const pct=Math.round(yes.length/Q.length*100);
+        const msg=pct>=60?"Vous êtes une cible facile à profiler.":pct>=20?"Quelques portes restent ouvertes.":"Bons réflexes ! Venez voir ce qui vous échappe encore.";
+        z.innerHTML=`<div class="quiz-progress"><i style="width:100%"></i></div><div class="q-result"><div class="q-step">Votre exposition estimée</div><div class="big" id="qbig">0%</div><div class="q-text" style="margin:12px 0 0">${msg}</div>${yes.length?`<ul>${yes.map(i=>`<li>${Q[i][1]}</li>`).join("")}</ul>`:"<p style='color:var(--muted)'>Le direct vous montrera les traces auxquelles on ne pense pas.</p>"}<div class="hero-actions" style="margin:18px 0 0"><a class="btn btn-primary js-wa" href="${WHATSAPP_GROUP_URL}" target="_blank" rel="noopener"><svg class="wa"><use href="#i-wa"/></svg> Apprendre à me protéger</a><button class="btn btn-ghost" type="button" id="qAgain">Recommencer</button></div></div>`;
+        const b=$("#qbig"); b.dataset.count=pct; countUp(b); setTimeout(()=>b.textContent=pct+"%",reduce?0:1450);
+        $("#qAgain").onclick=()=>{qi=0;yes=[];renderQuiz();};
+      }
+    }
+    renderQuiz();
+
+    /* ---- Compte à rebours ---- */
+    const ids=["days","hours","minutes","seconds"], prev={};
+    function updateCountdown(){
+      const d=target-Date.now();
+      if(d<=0){
+        const live=d>-EVENT_DURATION_MIN*60000;
+        $("#countdown").style.display="none"; const ln=$("#liveNow"); ln.style.display="block";
+        ln.textContent= live?"● EN DIRECT MAINTENANT":"Merci d'avoir été là ! Replay et ressources dans le groupe.";
+        if(!live) ln.style.animation="none";
+        $("#heroCountdown").textContent= live?"C'est maintenant !":"Conférence terminée"; return;
+      }
+      const v={days:Math.floor(d/864e5),hours:Math.floor(d%864e5/36e5),minutes:Math.floor(d%36e5/6e4),seconds:Math.floor(d%6e4/1e3)};
+      ids.forEach(id=>{ const s=String(v[id]).padStart(2,"0"), el=document.getElementById(id); if(prev[id]!==s){ el.textContent=s; prev[id]=s; if(!reduce){ el.classList.remove("tick"); void el.offsetWidth; el.classList.add("tick"); } } });
+      $("#heroCountdown").textContent=`Dans ${v.days} j ${v.hours} h ${v.minutes} min`;
+    }
+    updateCountdown(); setInterval(updateCountdown,1000);
+    try{ $("#localTime").textContent="Chez vous : "+new Date(target).toLocaleString("fr-FR",{weekday:"long",hour:"2-digit",minute:"2-digit"}); }catch(e){}
+
+    /* ---- Agenda (.ics) ---- */
+    $("#addCal").onclick=()=>{
+      const f=t=>new Date(t).toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");
+      const ics=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//OSINT360//FR","BEGIN:VEVENT","UID:osint360-20261114@conference",
+        "DTSTAMP:"+f(Date.now()),"DTSTART:"+f(target),"DTEND:"+f(target+EVENT_DURATION_MIN*60000),
+        "SUMMARY:OSINT 360° — Conférence TikTok LIVE","DESCRIPTION:Lien du direct dans le groupe WhatsApp : "+WHATSAPP_GROUP_URL,
+        "BEGIN:VALARM","TRIGGER:-PT30M","ACTION:DISPLAY","DESCRIPTION:OSINT 360° commence dans 30 minutes","END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n");
+      const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([ics],{type:"text/calendar"})); a.download="osint360-conference.ics"; a.click();
+      toast("Événement ajouté — rappel 30 min avant ✔");
+    };
+
+    /* ---- Partage ---- */
+    $("#share").onclick=async()=>{
+      const data={title:"OSINT 360° — Conférence",text:"On sait plus de choses sur vous que vous ne l'imaginez. Conférence OSINT 360° en direct sur TikTok, samedi 14 novembre à 20 h :",url:location.href};
+      try{ if(navigator.share){ await navigator.share(data); return; } }catch(e){ return; }
+      try{ await navigator.clipboard.writeText(data.text+" "+data.url); toast("Lien copié — partagez-le !"); }
+      catch(e){ open("https://wa.me/?text="+encodeURIComponent(data.text+" "+data.url),"_blank","noopener"); }
+    };
+  })();
+  </script>
+</body>
+</html>
