@@ -23,7 +23,7 @@ En haut de `index.html`, bloc `CONFIGURATION` :
 - `EVENT_DATE` — date/heure du direct (ISO 8601 avec fuseau)
 - `EVENT_DURATION_MIN` — durée estimée (agenda + passage « en direct » → « terminé »)
 
-Si le domaine final n'est pas `osint360.vercel.app`, mettre à jour l'URL absolue de `og:image`.
+Domaine de production : https://osint.eflex.app/ (utilisé dans `og:image`, `og:url` et `canonical`).
 
 ## Déploiement Vercel
 
