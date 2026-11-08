@@ -1,6 +1,6 @@
 # OSINT 360° — Conférence
 
-Site de l'événement **OSINT 360°** : conférence en direct sur TikTok LIVE, samedi 14 novembre 2026 à 20 h (UTC+1).
+Site de l'événement **OSINT 360°** : conférence en direct sur TikTok LIVE, dimanche 15 novembre 2026 à 20 h (UTC+1).
 
 Site statique (HTML/CSS/JS, aucune dépendance, aucun build).
 
